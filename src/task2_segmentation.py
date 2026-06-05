@@ -198,7 +198,7 @@ def train_one_epoch(model, loader, criterion, optimizer, scaler, device):
     for images, masks in loader:
         images, masks = images.to(device), masks.to(device)
 
-        with torch.cuda.amp.autocast(enabled=(scaler is not None)):
+        with torch.amp.autocast("cuda", enabled=(scaler is not None)):
             outputs = model(images)
             loss = criterion(outputs, masks)
 
@@ -343,18 +343,19 @@ def plot_segmentation_samples(model, dataset, output_dir, device, num_classes):
         image_disp = image_disp * std + mean
         image_disp = np.clip(image_disp, 0, 1)
 
-        # Build ground-truth mask display
+        # Build ground-truth mask display (use transformed mask for shape match)
+        mask_tf = transformed["mask"].cpu().numpy()  # (H, W) same as pred.shape
         if num_classes == 2:
-            # 1=fg→green, 0=bg→black, 255=ignore→gray
+            # 1=fg→green, 2=bg→black, 3=border→gray
             gt_disp = np.zeros((*pred.shape, 3), dtype=np.float32)
-            gt_disp[mask_np == 1] = [0, 1, 0]       # green = foreground
-            gt_disp[mask_np == 2] = [0, 0, 0]       # black = background
-            gt_disp[mask_np == 3] = [0.5, 0.5, 0.5] # gray = border
+            gt_disp[mask_tf == 1] = [0, 1, 0]       # green = foreground
+            gt_disp[mask_tf == 2] = [0, 0, 0]       # black = background
+            gt_disp[mask_tf == 3] = [0.5, 0.5, 0.5] # gray = border
         else:
             gt_disp = np.zeros((*pred.shape, 3), dtype=np.float32)
             colors = {1: [1, 0, 0], 2: [0, 1, 0], 3: [0, 0, 1]}
             for v, c in colors.items():
-                gt_disp[mask_np == v] = c
+                gt_disp[mask_tf == v] = c
 
         # Build prediction mask display
         pred_disp = np.zeros((*pred.shape, 3), dtype=np.float32)
@@ -429,7 +430,7 @@ def main():
     scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=warmup_cosine)
 
     # AMP
-    scaler = torch.cuda.amp.GradScaler() if (args.use_amp and device.type == "cuda") else None
+    scaler = torch.amp.GradScaler("cuda") if (args.use_amp and device.type == "cuda") else None
     print(f"AMP: {'enabled' if scaler else 'disabled'}")
 
     # History

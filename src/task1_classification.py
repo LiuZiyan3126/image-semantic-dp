@@ -379,6 +379,10 @@ def main():
     with open(os.path.join(args.output_dir, "results.json"), "w") as f:
         json.dump(results, f, indent=2)
 
+    # Save training history before plotting (以防丢失)
+    with open(os.path.join(args.output_dir, "history.json"), "w") as f:
+        json.dump(history, f, indent=2)
+
     # Plots
     plot_curves(history, args.output_dir)
 
