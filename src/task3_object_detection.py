@@ -64,12 +64,12 @@ def parse_args():
     # Training
     parser.add_argument("--epochs", type=int, default=30,
                         help="Total training epochs")
-    parser.add_argument("--lr", type=float, default=1e-3,
+    parser.add_argument("--lr", type=float, default=1e-4,
                         help="Peak learning rate")
     parser.add_argument("--weight_decay", type=float, default=1e-4,
                         help="Weight decay")
     # Scheduler
-    parser.add_argument("--warmup_epochs", type=int, default=2,
+    parser.add_argument("--warmup_epochs", type=int, default=5,
                         help="Linear warm-up epochs")
     parser.add_argument("--lr_min", type=float, default=1e-6,
                         help="Minimum LR for cosine annealing")
@@ -236,10 +236,13 @@ def train_one_epoch(model, loader, optimizer, scaler, device):
         optimizer.zero_grad(set_to_none=True)
         if scaler is not None:
             scaler.scale(losses).backward()
+            scaler.unscale_(optimizer)
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
             scaler.step(optimizer)
             scaler.update()
         else:
             losses.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
             optimizer.step()
 
         running_loss += losses.item() * len(images)
