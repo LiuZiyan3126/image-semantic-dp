@@ -107,6 +107,17 @@
 
 脚本 `voc_target_to_boxes()` 负责将 XML 解析为 Faster R-CNN 所需的 `(boxes[N,4], labels[N])` 格式，坐标采用 `[x1, y1, x2, y2]`（左上/右下角）。
 
+### 2.6 数据集样本预览
+
+---
+
+<!-- ===== 图1：贴图区域 ===== -->
+**[图 1] 数据集样本预览**
+- **图片文件**：从 VOC 数据集中挑选 6-8 张图片，用 `task3_inference.py` 推理后截取（或者直接用 VOC 原图 + GT 框）
+- **建议内容**：两行排列——上行：原始图像；下行：带 GT 标注框的图像（绿色框+类别标签）
+- **标题**：图 1: PASCAL VOC 数据集样本。上行：原始图像；下行：Ground Truth 标注（绿色框为人工标注）
+- **生成方法**：从数据集随便加载几张图显示即可，或用 inference 脚本对 VOC 原图推理
+
 ---
 
 ## 3. 方法说明
@@ -198,6 +209,16 @@
 | 自包含性 | ✅ 单个 Python 文件 | ❌ 外部仓库依赖 |
 
 选择 Faster R-CNN 的主要理由是**自包含**——torchvision 内置、预训练权重一键加载，整个训练流程在单个 Python 文件中完成，与项目 Task 1（timm）和 Task 2（smp）的风格一致。对于学术实验场景，精度和可复现性优先于推理速度。
+
+### 3.8 模型架构示意图
+
+---
+
+<!-- ===== 图2：贴图区域 ===== -->
+**[图 2] Faster R-CNN 架构示意图**
+- **图片来源**：手绘或用画图工具（如 draw.io、PPT）绘制，或从论文 [Ren et al., 2016] 截取
+- **建议内容**：标注四部分——Backbone (ResNet-50 + FPN) → RPN → RoI Align → R-CNN Head → NMS → 输出
+- **标题**：图 2: Faster R-CNN 架构示意图。图片经 ResNet-50+FPN 提取多尺度特征，RPN 生成候选区域，RoI Align 池化为固定大小，R-CNN Head 分类+回归，NMS 去重后输出最终检测结果
 
 ---
 
@@ -434,17 +455,67 @@ Epoch  30/30 | LR: 1.00e-06 | TrLoss: 0.0458 | mAP@0.5: 0.7621 | mAP@0.5:0.95: 0
 | 19 | chair | 0.5858 | 困难 |
 | 20 | pottedplant | **0.5354** | 困难 |
 
-### 6.4 训练曲线
+### 6.4 可视化结果
 
-![图 1: 训练曲线](output/task3/training_curves.png)
+---
 
-*图 1: 训练过程曲线。左：训练 Loss 持续下降；中：验证集 mAP@0.5 波动后恢复；右：mAP@0.5:0.95 持续上升*
+<!-- ===== 图3：贴图区域 ===== -->
+**[图 3] 训练过程曲线**
+- **图片文件**：`output/task3/training_curves.png`（训练完成后已自动生成）
+- **内容**：三张子图——左：Training Loss 下降曲线；中：mAP@0.5 变化曲线；右：mAP@0.5:0.95 变化曲线
+- **标题**：图 3: 训练过程曲线。左：训练 Loss 持续从 0.34 下降至 0.05；中：验证集 mAP@0.5 Epoch 1 达到最高 0.7811 后稳定在 0.76-0.77；右：mAP@0.5:0.95 从 0.45 持续上升至 0.51
+- **直接把 `training_curves.png` 贴到此处即可**
 
-### 6.5 检测可视化
+---
 
-![图 2: 检测样本](output/task3/detection_samples.png)
+<!-- ===== 图4：贴图区域 ===== -->
+**[图 4] 检测样本可视化**
+- **图片文件**：`output/task3/detection_samples.png`（训练完成后已自动生成）
+- **内容**：8 张测试集图片的检测对比——绿色虚线框 = Ground Truth（人工标注），红色实线框 = 模型预测
+- **标题**：图 4: 测试集检测样本对比。绿色虚线框为 Ground Truth，红色实线框为模型预测（conf ≥ 0.5），框上标注类别名和置信度
+- **直接把 `detection_samples.png` 贴到此处即可**
 
-*图 2: 测试集 8 张样本的检测结果。绿色虚线框 = Ground Truth，红色实线框 = 模型预测*
+---
+
+<!-- ===== 图5：贴图区域 ===== -->
+**[图 5] Per-Class AP 柱状图**
+- **图片文件**：需手动生成（建议用 Python 或 Excel 画柱状图，数据见 §6.3 表格）
+- **内容**：20 个类别的 AP@0.5 柱状图，按从高到低排列，标注具体数值
+- **标题**：图 5: PASCAL VOC 20 类 Per-Class AP@0.5。car (0.91) 最高，pottedplant (0.54) 最低
+- **快速生成方法**：执行下方 Python 代码生成并保存
+
+```python
+# 在本地或服务器执行，生成 per_class_ap.png
+import matplotlib.pyplot as plt
+import numpy as np
+
+classes = ['car','bicycle','person','bus','horse','motorbike','aeroplane','train',
+           'tvmonitor','cow','cat','sheep','bird','bottle','sofa','diningtable',
+           'dog','boat','chair','pottedplant']
+ap_values = [0.9095,0.8809,0.8788,0.8650,0.8604,0.8586,0.8365,0.8203,
+             0.8182,0.8161,0.8041,0.7706,0.7586,0.7549,0.7510,0.7234,
+             0.7111,0.6819,0.5858,0.5354]
+
+fig, ax = plt.subplots(figsize=(14, 6))
+colors = plt.cm.RdYlGn([(v - 0.5) / 0.5 for v in ap_values])
+bars = ax.bar(range(len(classes)), ap_values, color=colors, edgecolor='black', linewidth=0.5)
+ax.set_xticks(range(len(classes)))
+ax.set_xticklabels(classes, rotation=45, ha='right', fontsize=9)
+ax.set_ylabel('AP@0.5', fontsize=12)
+ax.set_title('PASCAL VOC 2007 Test — Per-Class AP@0.5 (Faster R-CNN + ResNet-50-FPN)', fontsize=13)
+ax.set_ylim(0, 1.0)
+ax.axhline(y=np.mean(ap_values), color='blue', linestyle='--', linewidth=1, label=f'mAP = {np.mean(ap_values):.4f}')
+for bar, val in zip(bars, ap_values):
+    ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01, f'{val:.3f}',
+            ha='center', va='bottom', fontsize=7, rotation=90)
+ax.legend(fontsize=10)
+plt.tight_layout()
+plt.savefig('output/task3/per_class_ap.png', dpi=150)
+plt.close()
+print("Saved: output/task3/per_class_ap.png")
+```
+
+---
 
 ### 6.6 收敛过程分析
 
@@ -484,6 +555,17 @@ Epoch  30/30 | LR: 1.00e-06 | TrLoss: 0.0458 | mAP@0.5: 0.7621 | mAP@0.5:0.95: 0
 | 检测框定位不准 | 所有类别 | 低（mAP@0.5 高，mAP@0.5:0.95 低 0.27） |
 
 ### 7.2 典型问题分析
+
+---
+
+<!-- ===== 图6：贴图区域 ===== -->
+**[图 6] 错误案例对比**
+- **图片来源**：从 `detection_samples.png` 中挑 3-4 张检测效果差的样本，或者用 `task3_inference.py` 对 VOC 测试集中低 AP 类别（pottedplant, chair）的图片推理后截取
+- **建议内容**：3 组"原图 → GT 框 → 预测框"的三列对比，标注出漏检（GT 有框但预测没有）和误检（预测有框但 GT 没有）的位置
+- **标题**：图 6: 错误案例分析。箭头标注典型错误——红色箭头指向漏检（False Negative），蓝色箭头指向误检（False Positive），黄色箭头指向定位偏差（IoU < 0.5）
+- **快速获取方法**：用 inference 脚本对 chair/pottedplant 类图片推理，找预测不准的样本
+
+---
 
 **问题 1：粗检测 ok，精确定位差**
 
