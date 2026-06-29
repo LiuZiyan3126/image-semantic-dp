@@ -113,6 +113,7 @@
 
 <!-- ===== 图1：贴图区域 ===== -->
 **[图 1] 数据集样本预览**
+
 - **图片文件**：从 VOC 数据集中挑选 6-8 张图片，用 `task3_inference.py` 推理后截取（或者直接用 VOC 原图 + GT 框）
 - **建议内容**：两行排列——上行：原始图像；下行：带 GT 标注框的图像（绿色框+类别标签）
 - **标题**：图 1: PASCAL VOC 数据集样本。上行：原始图像；下行：Ground Truth 标注（绿色框为人工标注）
@@ -126,39 +127,9 @@
 
 本实验采用 **Faster R-CNN**（Ren et al., NeurIPS 2015），这是目标检测领域最具代表性的两阶段（two-stage）检测算法，至今仍是学术界的标准 baseline 之一。模型由四部分组成：
 
-```
-输入图像 (3, H, W)  (可变尺寸)
-       │
-       ▼
-┌─────────────────────┐
-│  ResNet-50 + FPN    │  ← Backbone: 多尺度特征提取
-│  特征金字塔 P2~P6   │     COCO 预训练, 全量微调
-└──────┬──────────────┘
-       │
-       ▼
-┌─────────────────────┐
-│  RPN (区域提议网络)  │  ← Stage 1: 生成候选区域
-│  - 滑动窗口 anchor   │     每个位置 15 个 anchor
-│  - objectness 分类   │     输出 ~2000 个 proposals
-│  - 边框回归          │
-└──────┬──────────────┘
-       │ proposals
-       ▼
-┌─────────────────────┐
-│  RoI Align          │  ← 将任意大小 proposal
-│  双线性插值 → 7×7   │     映射为固定尺寸特征
-└──────┬──────────────┘
-       │
-       ▼
-┌─────────────────────┐
-│  R-CNN Head         │  ← Stage 2: 精细分类+回归
-│  - FC → 21 类       │     21 = 20 VOC + background
-│  - FC → 4Δ (坐标)   │     对每个 proposal 独立预测
-└──────┬──────────────┘
-       │
-       ▼
-    NMS 后处理 → 最终检测结果
-```
+![图 2: Faster R-CNN 架构图](output/task3/fig_architecture.png)
+
+*图 2: Faster R-CNN 架构示意图。输入图像经 ResNet-50+FPN 提取多尺度特征，RPN（Stage 1）生成候选区域，RoI Align 将区域映射为固定尺寸，R-CNN Head（Stage 2）分类+回归，NMS 去重后输出最终检测结果。*
 
 ### 3.2 Backbone：ResNet-50 + FPN
 
@@ -212,13 +183,9 @@
 
 ### 3.8 模型架构示意图
 
----
+![图 2: Faster R-CNN 架构示意图](output/task3/fig_architecture.png)
 
-<!-- ===== 图2：贴图区域 ===== -->
-**[图 2] Faster R-CNN 架构示意图**
-- **图片来源**：手绘或用画图工具（如 draw.io、PPT）绘制，或从论文 [Ren et al., 2016] 截取
-- **建议内容**：标注四部分——Backbone (ResNet-50 + FPN) → RPN → RoI Align → R-CNN Head → NMS → 输出
-- **标题**：图 2: Faster R-CNN 架构示意图。图片经 ResNet-50+FPN 提取多尺度特征，RPN 生成候选区域，RoI Align 池化为固定大小，R-CNN Head 分类+回归，NMS 去重后输出最终检测结果
+*图 2: Faster R-CNN 架构示意图。输入图像经 ResNet-50+FPN 提取多尺度特征，RPN（Stage 1）生成候选区域，RoI Align 将提案区域映射为固定尺寸，R-CNN Head（Stage 2）分类+回归，NMS 去重后输出最终检测结果。*
 
 ---
 
@@ -457,19 +424,28 @@ Epoch  30/30 | LR: 1.00e-06 | TrLoss: 0.0458 | mAP@0.5: 0.7621 | mAP@0.5:0.95: 0
 
 ### 6.4 可视化结果
 
----
+------
 
-<!-- ===== 图3：贴图区域 ===== -->
 **[图 3] 训练过程曲线**
+
+![image-20260629094739985](C:\Users\lzy\AppData\Roaming\Typora\typora-user-images\image-20260629094739985.png)
+
 - **图片文件**：`output/task3/training_curves.png`（训练完成后已自动生成）
+
 - **内容**：三张子图——左：Training Loss 下降曲线；中：mAP@0.5 变化曲线；右：mAP@0.5:0.95 变化曲线
+
 - **标题**：图 3: 训练过程曲线。左：训练 Loss 持续从 0.34 下降至 0.05；中：验证集 mAP@0.5 Epoch 1 达到最高 0.7811 后稳定在 0.76-0.77；右：mAP@0.5:0.95 从 0.45 持续上升至 0.51
+
 - **直接把 `training_curves.png` 贴到此处即可**
 
----
+  ------
 
-<!-- ===== 图4：贴图区域 ===== -->
+  
+
+![image-20260629094829628](C:\Users\lzy\AppData\Roaming\Typora\typora-user-images\image-20260629094829628.png)
+
 **[图 4] 检测样本可视化**
+
 - **图片文件**：`output/task3/detection_samples.png`（训练完成后已自动生成）
 - **内容**：8 张测试集图片的检测对比——绿色虚线框 = Ground Truth（人工标注），红色实线框 = 模型预测
 - **标题**：图 4: 测试集检测样本对比。绿色虚线框为 Ground Truth，红色实线框为模型预测（conf ≥ 0.5），框上标注类别名和置信度
