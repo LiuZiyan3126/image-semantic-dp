@@ -127,7 +127,31 @@
 
 本实验采用 **Faster R-CNN**（Ren et al., NeurIPS 2015），这是目标检测领域最具代表性的两阶段（two-stage）检测算法，至今仍是学术界的标准 baseline 之一。模型由四部分组成：
 
-![图 2: Faster R-CNN 架构图](output/task3/fig_architecture.png)
+```mermaid
+flowchart TD
+    A["Input Image<br/>(3, H, W) variable size"]:::input
+    B["ResNet-50 + FPN<br/>Feature Pyramid P2-P6<br/>COCO pretrained"]:::backbone
+    C["RPN - Region Proposal Network<br/>Stage 1: Generate Proposals<br/>15 anchors per location<br/>Objectness cls + BBox reg"]:::rpn
+    D["RoI Align<br/>bilinear interpolation to 7x7<br/>fixed feature per proposal"]:::roi
+    E["R-CNN Head<br/>Stage 2: Classification + Refinement<br/>FC to 21 classes (20 VOC + bg)<br/>FC to 4-delta coordinates"]:::head
+    F["NMS Post-processing<br/>IoU threshold = 0.5"]:::nms
+    G["Final Output<br/>{boxes, labels, scores}"]:::output
+
+    A --> B
+    B --> C
+    C -->|"~2000 proposals"| D
+    D --> E
+    E --> F
+    F --> G
+
+    classDef input fill:#E3F2FD,stroke:#1565C0,stroke-width:2px
+    classDef backbone fill:#FFF3E0,stroke:#E65100,stroke-width:2px
+    classDef rpn fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px
+    classDef roi fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
+    classDef head fill:#FFEBEE,stroke:#C62828,stroke-width:2px
+    classDef nms fill:#E0F7FA,stroke:#00838F,stroke-width:2px
+    classDef output fill:#F1F8E9,stroke:#558B2F,stroke-width:2px
+```
 
 *图 2: Faster R-CNN 架构示意图。输入图像经 ResNet-50+FPN 提取多尺度特征，RPN（Stage 1）生成候选区域，RoI Align 将区域映射为固定尺寸，R-CNN Head（Stage 2）分类+回归，NMS 去重后输出最终检测结果。*
 
@@ -183,7 +207,7 @@
 
 ### 3.8 模型架构示意图
 
-![图 2: Faster R-CNN 架构示意图](output/task3/fig_architecture.png)
+![image-20260629102948895](C:\Users\lzy\AppData\Roaming\Typora\typora-user-images\image-20260629102948895.png)
 
 *图 2: Faster R-CNN 架构示意图。输入图像经 ResNet-50+FPN 提取多尺度特征，RPN（Stage 1）生成候选区域，RoI Align 将提案区域映射为固定尺寸，R-CNN Head（Stage 2）分类+回归，NMS 去重后输出最终检测结果。*
 
@@ -246,18 +270,9 @@
 
 采用 **线性 WarmUp → Cosine Annealing** 两阶段调度：
 
-```
-lr
-1e-4 ┤                         ╱╲
-     │                        ╱  ╲
-     │    warmup (5 ep)      ╱    ╲  cosine decay (25 ep)
-     │    ╱                  ╱      ╲
-     │   ╱                 ╱        ╲
-     │  ╱                ╱          ╲___
-1e-6 ┤─╱               ╱               ╲___
-     └─────────────────────────────────────────
-     Epoch 0    5                                      30
-```
+![图 3: 学习率调度曲线](output/task3/fig_lr_schedule.png)
+
+*图 3: WarmUp + Cosine Annealing 学习率调度曲线。前 5 epoch 线性增长至 1e-4，后 25 epoch 余弦退火至 1e-6。*
 
 - Warmup 阶段延长至 5 epoch（初始设计为 2 epoch）：首次训练使用 1e-3 lr + 2 epoch warmup 时梯度爆炸（Epoch 2 Loss 突变为 NaN），修复方案同时降低了峰值 lr 至 1e-4 并延长了 warmup，确保训练稳定
 - Cosine 阶段平滑退火，末 epoch 接近 1e-6

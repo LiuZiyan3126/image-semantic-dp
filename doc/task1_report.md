@@ -394,6 +394,3 @@ with torch.no_grad():
 4. Szegedy, C., Vanhoucke, V., Ioffe, S., Shlens, J., & Wojna, Z. (2016). Rethinking the Inception Architecture for Computer Vision. *Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)*.
 5. timm (PyTorch Image Models): https://github.com/huggingface/pytorch-image-models
 
----
-
-*生成日期：2026-05-29*
