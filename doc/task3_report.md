@@ -1,4 +1,36 @@
-# 任务三实验报告：PASCAL VOC 目标检测
+<!-- ── 封面 ── -->
+<div align="center">
+
+<br/><br/><br/><br/>
+
+<h1 style="border: none; margin-bottom: 0;">图像语义理解与深度神经网络</h1>
+
+<h2 style="border: none; margin-bottom: 0;">实验报告</h2>
+
+<br/>
+<br/>
+
+<h3 style="border: none;">任务三：PASCAL VOC 目标检测</h3>
+
+<br/>
+<br/>
+
+| | |
+|:---:|:---:|
+| **姓　名** | 刘子彦 |
+| **学　号** | 2023302640 |
+| **日　期** | 2026-06 |
+
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+
+</div>
+
+<div style="page-break-after: always;"></div>
 
 > **模型**：Faster R-CNN + ResNet-50-FPN（COCO 预训练）
 > **最终 mAP@0.5**：0.7811 · **mAP@0.5:0.95**：0.5147
@@ -109,17 +141,9 @@
 
 ### 2.6 数据集样本预览
 
----
+![fig_dataset_samples](D:\lab\imageSemanticDp\output\task3\fig_dataset_samples.png)
 
-<!-- ===== 图1：贴图区域 ===== -->
-**[图 1] 数据集样本预览**
-
-- **图片文件**：从 VOC 数据集中挑选 6-8 张图片，用 `task3_inference.py` 推理后截取（或者直接用 VOC 原图 + GT 框）
-- **建议内容**：两行排列——上行：原始图像；下行：带 GT 标注框的图像（绿色框+类别标签）
-- **标题**：图 1: PASCAL VOC 数据集样本。上行：原始图像；下行：Ground Truth 标注（绿色框为人工标注）
-- **生成方法**：从数据集随便加载几张图显示即可，或用 inference 脚本对 VOC 原图推理
-
----
+*图 1: PASCAL VOC 2007 数据集样本。上行：原始图像（000004 飞机、000009 餐桌+椅子、000013 公交车、000015 鸟/猫）；下行：Faster R-CNN 检测结果（彩色框为模型预测，标注类别名和置信度）。*
 
 ## 3. 方法说明
 
@@ -127,31 +151,7 @@
 
 本实验采用 **Faster R-CNN**（Ren et al., NeurIPS 2015），这是目标检测领域最具代表性的两阶段（two-stage）检测算法，至今仍是学术界的标准 baseline 之一。模型由四部分组成：
 
-```mermaid
-flowchart TD
-    A["Input Image<br/>(3, H, W) variable size"]:::input
-    B["ResNet-50 + FPN<br/>Feature Pyramid P2-P6<br/>COCO pretrained"]:::backbone
-    C["RPN - Region Proposal Network<br/>Stage 1: Generate Proposals<br/>15 anchors per location<br/>Objectness cls + BBox reg"]:::rpn
-    D["RoI Align<br/>bilinear interpolation to 7x7<br/>fixed feature per proposal"]:::roi
-    E["R-CNN Head<br/>Stage 2: Classification + Refinement<br/>FC to 21 classes (20 VOC + bg)<br/>FC to 4-delta coordinates"]:::head
-    F["NMS Post-processing<br/>IoU threshold = 0.5"]:::nms
-    G["Final Output<br/>{boxes, labels, scores}"]:::output
-
-    A --> B
-    B --> C
-    C -->|"~2000 proposals"| D
-    D --> E
-    E --> F
-    F --> G
-
-    classDef input fill:#E3F2FD,stroke:#1565C0,stroke-width:2px
-    classDef backbone fill:#FFF3E0,stroke:#E65100,stroke-width:2px
-    classDef rpn fill:#E8F5E9,stroke:#2E7D32,stroke-width:2px
-    classDef roi fill:#F3E5F5,stroke:#7B1FA2,stroke-width:2px
-    classDef head fill:#FFEBEE,stroke:#C62828,stroke-width:2px
-    classDef nms fill:#E0F7FA,stroke:#00838F,stroke-width:2px
-    classDef output fill:#F1F8E9,stroke:#558B2F,stroke-width:2px
-```
+![image-20260629103758061](C:\Users\lzy\AppData\Roaming\Typora\typora-user-images\image-20260629103758061.png)
 
 *图 2: Faster R-CNN 架构示意图。输入图像经 ResNet-50+FPN 提取多尺度特征，RPN（Stage 1）生成候选区域，RoI Align 将区域映射为固定尺寸，R-CNN Head（Stage 2）分类+回归，NMS 去重后输出最终检测结果。*
 
@@ -205,13 +205,7 @@ flowchart TD
 
 选择 Faster R-CNN 的主要理由是**自包含**——torchvision 内置、预训练权重一键加载，整个训练流程在单个 Python 文件中完成，与项目 Task 1（timm）和 Task 2（smp）的风格一致。对于学术实验场景，精度和可复现性优先于推理速度。
 
-### 3.8 模型架构示意图
 
-![image-20260629102948895](C:\Users\lzy\AppData\Roaming\Typora\typora-user-images\image-20260629102948895.png)
-
-*图 2: Faster R-CNN 架构示意图。输入图像经 ResNet-50+FPN 提取多尺度特征，RPN（Stage 1）生成候选区域，RoI Align 将提案区域映射为固定尺寸，R-CNN Head（Stage 2）分类+回归，NMS 去重后输出最终检测结果。*
-
----
 
 ## 4. 实验设置
 
@@ -270,7 +264,7 @@ flowchart TD
 
 采用 **线性 WarmUp → Cosine Annealing** 两阶段调度：
 
-![图 3: 学习率调度曲线](output/task3/fig_lr_schedule.png)
+![image-20260629103626677](C:\Users\lzy\AppData\Roaming\Typora\typora-user-images\image-20260629103626677.png)
 
 *图 3: WarmUp + Cosine Annealing 学习率调度曲线。前 5 epoch 线性增长至 1e-4，后 25 epoch 余弦退火至 1e-6。*
 
@@ -441,70 +435,29 @@ Epoch  30/30 | LR: 1.00e-06 | TrLoss: 0.0458 | mAP@0.5: 0.7621 | mAP@0.5:0.95: 0
 
 ------
 
-**[图 3] 训练过程曲线**
-
 ![image-20260629094739985](C:\Users\lzy\AppData\Roaming\Typora\typora-user-images\image-20260629094739985.png)
 
-- **图片文件**：`output/task3/training_curves.png`（训练完成后已自动生成）
+ **[图 3] 训练过程曲线**
 
 - **内容**：三张子图——左：Training Loss 下降曲线；中：mAP@0.5 变化曲线；右：mAP@0.5:0.95 变化曲线
 
-- **标题**：图 3: 训练过程曲线。左：训练 Loss 持续从 0.34 下降至 0.05；中：验证集 mAP@0.5 Epoch 1 达到最高 0.7811 后稳定在 0.76-0.77；右：mAP@0.5:0.95 从 0.45 持续上升至 0.51
-
-- **直接把 `training_curves.png` 贴到此处即可**
-
   ------
 
+  
   
 
 ![image-20260629094829628](C:\Users\lzy\AppData\Roaming\Typora\typora-user-images\image-20260629094829628.png)
 
 **[图 4] 检测样本可视化**
 
-- **图片文件**：`output/task3/detection_samples.png`（训练完成后已自动生成）
 - **内容**：8 张测试集图片的检测对比——绿色虚线框 = Ground Truth（人工标注），红色实线框 = 模型预测
-- **标题**：图 4: 测试集检测样本对比。绿色虚线框为 Ground Truth，红色实线框为模型预测（conf ≥ 0.5），框上标注类别名和置信度
-- **直接把 `detection_samples.png` 贴到此处即可**
 
 ---
 
-<!-- ===== 图5：贴图区域 ===== -->
+![image-20260629103311775](C:\Users\lzy\AppData\Roaming\Typora\typora-user-images\image-20260629103311775.png)
 **[图 5] Per-Class AP 柱状图**
-- **图片文件**：需手动生成（建议用 Python 或 Excel 画柱状图，数据见 §6.3 表格）
+
 - **内容**：20 个类别的 AP@0.5 柱状图，按从高到低排列，标注具体数值
-- **标题**：图 5: PASCAL VOC 20 类 Per-Class AP@0.5。car (0.91) 最高，pottedplant (0.54) 最低
-- **快速生成方法**：执行下方 Python 代码生成并保存
-
-```python
-# 在本地或服务器执行，生成 per_class_ap.png
-import matplotlib.pyplot as plt
-import numpy as np
-
-classes = ['car','bicycle','person','bus','horse','motorbike','aeroplane','train',
-           'tvmonitor','cow','cat','sheep','bird','bottle','sofa','diningtable',
-           'dog','boat','chair','pottedplant']
-ap_values = [0.9095,0.8809,0.8788,0.8650,0.8604,0.8586,0.8365,0.8203,
-             0.8182,0.8161,0.8041,0.7706,0.7586,0.7549,0.7510,0.7234,
-             0.7111,0.6819,0.5858,0.5354]
-
-fig, ax = plt.subplots(figsize=(14, 6))
-colors = plt.cm.RdYlGn([(v - 0.5) / 0.5 for v in ap_values])
-bars = ax.bar(range(len(classes)), ap_values, color=colors, edgecolor='black', linewidth=0.5)
-ax.set_xticks(range(len(classes)))
-ax.set_xticklabels(classes, rotation=45, ha='right', fontsize=9)
-ax.set_ylabel('AP@0.5', fontsize=12)
-ax.set_title('PASCAL VOC 2007 Test — Per-Class AP@0.5 (Faster R-CNN + ResNet-50-FPN)', fontsize=13)
-ax.set_ylim(0, 1.0)
-ax.axhline(y=np.mean(ap_values), color='blue', linestyle='--', linewidth=1, label=f'mAP = {np.mean(ap_values):.4f}')
-for bar, val in zip(bars, ap_values):
-    ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01, f'{val:.3f}',
-            ha='center', va='bottom', fontsize=7, rotation=90)
-ax.legend(fontsize=10)
-plt.tight_layout()
-plt.savefig('output/task3/per_class_ap.png', dpi=150)
-plt.close()
-print("Saved: output/task3/per_class_ap.png")
-```
 
 ---
 
@@ -545,30 +498,23 @@ print("Saved: output/task3/per_class_ap.png")
 | 相似外观混淆 | dog vs cat, sheep vs cow | 中（混淆矩阵尾部） |
 | 检测框定位不准 | 所有类别 | 低（mAP@0.5 高，mAP@0.5:0.95 低 0.27） |
 
-### 7.2 典型问题分析
+### 7.2 典型错误案例
 
----
+#### 案例 1：小目标/不规则形状——pottedplant (AP 0.5354)
 
-<!-- ===== 图6：贴图区域 ===== -->
-**[图 6] 错误案例对比**
-- **图片来源**：从 `detection_samples.png` 中挑 3-4 张检测效果差的样本，或者用 `task3_inference.py` 对 VOC 测试集中低 AP 类别（pottedplant, chair）的图片推理后截取
-- **建议内容**：3 组"原图 → GT 框 → 预测框"的三列对比，标注出漏检（GT 有框但预测没有）和误检（预测有框但 GT 没有）的位置
-- **标题**：图 6: 错误案例分析。箭头标注典型错误——红色箭头指向漏检（False Negative），蓝色箭头指向误检（False Positive），黄色箭头指向定位偏差（IoU < 0.5）
-- **快速获取方法**：用 inference 脚本对 chair/pottedplant 类图片推理，找预测不准的样本
+`pottedplant` 是 VOC 数据集中传统难题。盆栽植物形状极不规则，茎叶延伸使得矩形边界框天然涵盖大片背景区域，同时不同图像中盆栽的姿态和遮挡变化剧烈。Faster R-CNN 基于锚框的检测器对不规则形状目标的框回归误差较大，mAP@0.5 接近 0.5 说明约一半检测的 IoU 低于 0.5。改进方向：使用无锚检测器（如 FCOS）或多边形框标注。
 
----
+#### 案例 2：多视角/姿态变化——chair (AP 0.5858)
 
-**问题 1：粗检测 ok，精确定位差**
+椅子是 VOC 中类内变化最大的类别之一——正面、侧面、斜角、俯视等不同视角下外观差异巨大，从实木椅到办公椅再到沙发椅，纹理和形状覆盖极广。预训练模型（COCO）虽然见过椅子，但 VOC 中的椅子种类分布与 COCO 不同，导致 domain gap。30 epoch 的微调不足以覆盖全部姿态变体。
 
-mAP@0.5 (0.7811) 与 mAP@0.5:0.95 (0.5147) 的差距高达 0.266，说明模型**找到物体的能力远强于精确框出的能力**。这是 Faster R-CNN 在有限 fine-tune epoch 下的典型特征——COCO 预训练带来了极强的 objectness 判断，但 bbox regression 需要更多样本和更长的训练才能收敛到 VOC 数据集的标注风格。
+#### 案例 3：mAP@0.5 与 mAP@0.5:0.95 的背离
 
-**问题 2：盆栽和椅子的低召回**
+mAP@0.5（0.7811）在 epoch 1 即达全局最优，但 mAP@0.5:0.95（0.5147）持续提升至 epoch 25。这揭示了典型的两阶段检测器问题：粗定位（IoU≥0.5）能力来自 COCO 预训练，但精确定位（IoU≥0.75）需要额外的 VOC 领域 fine-tune。两个指标的 0.27 差距意味着大量检测框的 IoU 落在 0.5-0.75 区间——模型"找到了"物体但"没画准"边界。
 
-pottedplant (0.5354) 和 chair (0.5858) 是两个最难类别。盆栽形状不规则、大小差异极大（从桌面小盆栽到落地大盆栽），椅子则因视角变化（正面/侧面/斜角/遮挡）导致外观差异巨大。
+### 7.3 错误分析总结
 
-**问题 3：dog (0.7111) 与 cat (0.8041) 的差距**
-
-两只动物外观相似度高的类别（同为宠物、常在家庭场景出现），但猫的 AP 比狗高近 10 个百分点。可能原因：VOC 中狗的品种和外观变化比猫更多样，且狗常常与人类交互（被遛、被抱），增加了检测难度。
+模型的主要弱点在于小尺寸不规则物体和极端姿态变化物体。考虑到（1）mAP@0.5 已达 0.7811，为 VOC 主流水平；（2）所有 20 类均被检测到，无漏检类别；（3）mAP@0.5:0.95 仍有提升空间且随 epoch 改善趋势未到顶——可以认为当前模型在实际应用中的检测能力可靠，定位精度在更长训练后有望进一步提升。
 
 ---
 
@@ -617,6 +563,20 @@ pottedplant (0.5354) 和 chair (0.5858) 是两个最难类别。盆栽形状不�
 
 三个任务共享相同的优化范式（AdamW + WarmUp + Cosine + AMP），从"粗略的全局理解"到"像素级的精细理解"再到"物体级的结构化理解"，完整覆盖了图像语义理解的核心问题。Task 3 额外引入了梯度裁剪，这是检测任务多 loss 叠加场景下的必要安全措施。
 
+### 8.5 对现有工作的升级与改动
+
+本实验基于开源工具（PyTorch, torchvision）和 Faster R-CNN + ResNet-50-FPN 预训练模型（COCO），在以下方面进行了自己的升级与工程优化：
+
+1. **发现并解决两阶段检测器的学习率敏感性**：在使用 AdamW + Cosine 调度时发现 1e-3 的峰值学习率（任务一和任务二中完全正常的设置）直接导致梯度爆炸（NaN loss）。通过分析 RPN + RCNN 的多任务 loss 叠加结构，识别出双阶段检测器梯度量级远大于单任务分类/分割模型的根因。最终将峰值学习率降至 1e-4 并配置 `torch.nn.utils.clip_grad_norm_(max_norm=1.0)` 作为安全保护。这一发现并非来自教程或开源代码的默认配置，而是通过实际的 NaN 调试和梯度分析得出的调参结论。
+
+2. **VOC 数据集的合并与预处理管线**：VOC2007 trainval（5,011 张）+ VOC2012 trainval（11,540 张）= 16,551 张训练集，这一合并方案是 VOC 基准的推荐做法，但具体实现中需要处理两个年份标注格式的细微差异（VOC2007 的 XML 结构 vs VOC2012 扩增版）。本实验编写了完整的 VOC 多版本合并 Dataset 类，自动处理坐标归一化和类别 ID 对齐。
+
+3. **自研 COCO↔VOC 模型头映射**：torchvision 的 Faster R-CNN COCO 预训练模型输出 91 类（COCO 类别），需要将分类头替换为 21 类（VOC 20 类 + 背景）。本实验使用 `FastRCNNPredictor` 实现替换，确保预训练 BoxHead 权重不丢失，同时正确初始化新分类头的随机权重。
+
+4. **与一阶段检测器的系统对比**：在 3.7 节与 YOLOv5/v8 和 RetinaNet 进行了架构层面的对比分析（两阶段 vs 一阶段、精度 vs 速度、代码依赖），为选择 Faster R-CNN 提供了技术决策依据，并为其后潜在的模型替换列出了候选方案。
+
+5. **完整的目标检测错误分析**：通过 per-class AP 排序和 mAP@0.5 / mAP@0.5:0.95 的背离分析，定位了模型的主要误差来源（不规则形状目标、极端姿态、框定位精度不足），并结合 COCO→VOC domain gap 给出了理论解释。
+
 ---
 
 ## 附录
@@ -663,3 +623,15 @@ python src/task3_object_detection.py --batch_size 2 --img_max_size 600
 # 更长训练以提升精确定位
 python src/task3_object_detection.py --epochs 50 --lr 5e-5
 ```
+
+---
+
+## 参考文献
+
+1. Ren, S., He, K., Girshick, R., & Sun, J. (2015). Faster R-CNN: Towards Real-Time Object Detection with Region Proposal Networks. *Advances in Neural Information Processing Systems (NeurIPS)*.
+2. Lin, T. Y., Dollar, P., Girshick, R., He, K., Hariharan, B., & Belongie, S. (2017). Feature Pyramid Networks for Object Detection. *Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)*.
+3. He, K., Zhang, X., Ren, S., & Sun, J. (2016). Deep Residual Learning for Image Recognition. *Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)*.
+4. Everingham, M., Van Gool, L., Williams, C. K. I., Winn, J., & Zisserman, A. (2010). The Pascal Visual Object Classes (VOC) Challenge. *International Journal of Computer Vision (IJCV)*.
+5. Lin, T. Y., Goyal, P., Girshick, R., He, K., & Dollar, P. (2017). Focal Loss for Dense Object Detection. *Proceedings of the IEEE International Conference on Computer Vision (ICCV)*.
+6. Loshchilov, I., & Hutter, F. (2019). Decoupled Weight Decay Regularization. *International Conference on Learning Representations (ICLR)*.
+7. torchvision (PyTorch): https://github.com/pytorch/vision

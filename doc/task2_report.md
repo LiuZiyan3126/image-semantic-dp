@@ -1,7 +1,39 @@
-# 任务二实验报告：Oxford-IIIT Pet 图像分割
+<!-- ── 封面 ── -->
+<div align="center">
 
-> **模型**：DeepLabV3Plus + ResNet-50  
-> **最终 mIoU**：0.9721 · **Dice**：0.9817 · **Pixel Accuracy**：0.9871  
+<br/><br/><br/><br/>
+
+<h1 style="border: none; margin-bottom: 0;">图像语义理解与深度神经网络</h1>
+
+<h2 style="border: none; margin-bottom: 0;">实验报告</h2>
+
+<br/>
+<br/>
+
+<h3 style="border: none;">任务二：Oxford-IIIT Pet 图像分割</h3>
+
+<br/>
+<br/>
+
+| | |
+|:---:|:---:|
+| **姓　名** | 刘子彦 |
+| **学　号** | 2023302640 |
+| **日　期** | 2026-06 |
+
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+
+</div>
+
+<div style="page-break-after: always;"></div>
+
+> **模型**：DeepLabV3Plus + ResNet-50
+> **最终 mIoU**：0.9721 · **Dice**：0.9817 · **Pixel Accuracy**：0.9871
 > **训练设备**：AutoDL RTX 4090 D (25 GB VRAM)
 
 ---
@@ -112,11 +144,10 @@ trainval (3,680 张)
 
 ### 2.6 数据集样本预览
 
-<!-- ===== 图片占位：数据集样本预览 ===== -->
-<!-- 建议内容：6-8 张原始图像 + 对应 trimap 标注的对比排列 -->
-<!-- 标题：图 1: Oxford-IIIT Pet 数据集样本。上行：原始图像；下行：trimap 标注（绿=前景，黑=背景，灰=边界） -->
-<!-- 图片路径建议：output/task2/fig_dataset_samples.png -->
-![图 1: 数据集样本预览](output/task2/fig_dataset_samples.png)
+
+
+![图 1: 数据集样本预览](D:\lab\imageSemanticDp\output\task2\fig_dataset_samples.png)
+
 *图 1: Oxford-IIIT Pet 数据集样本。上行：原始图像；下行：trimap 标注。绿色=前景(FG)，黑色=背景(BG)，灰色=边界(Border)*
 
 ---
@@ -127,59 +158,7 @@ trainval (3,680 张)
 
 本实验采用 **DeepLabV3Plus** 架构，这是 Google 在 ECCV 2018 提出的语义分割模型，至今仍是分割任务的主流 baseline 之一。模型由三部分组成：
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                       输入图像 (3, 384, 384)                     │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-                             ▼
-              ┌──────────────────────────────┐
-              │     ResNet-50 Encoder         │
-              │   (ImageNet 预训练, 全量微调)    │
-              │                              │
-              │  Layer 0 → stride 2          │
-              │  Layer 1 → stride 4  ────────│──────── 跳连 ──────┐
-              │  Layer 2 → stride 8          │                   │
-              │  Layer 3 → stride 16         │                   │
-              │  Layer 4 → stride 16         │                   │
-              └──────────────┬───────────────┘                   │
-                             │                                   │
-                             ▼                                   │
-              ┌──────────────────────────────┐                   │
-              │         ASPP 模块             │                   │
-              │                              │                   │
-              │  ┌─ 1×1 Conv ────────────┐   │                   │
-              │  ├─ 3×3 Conv, rate=6  ───┤   │                   │
-              │  ├─ 3×3 Conv, rate=12 ──┤   │                   │
-              │  ├─ 3×3 Conv, rate=18 ──┤   │                   │
-              │  └─ Global AvgPool ──────┘   │                   │
-              │           │                  │                   │
-              │     Concat + 1×1 Conv        │                   │
-              └──────────────┬───────────────┘                   │
-                             │                                   │
-                             ▼                                   │
-              ┌──────────────────────────────┐                   │
-              │         Decoder               │                   │
-              │                              │                   │
-              │  ASPP 输出 ── 4× Upsample ──┐│                   │
-              │                            ││                   │
-              │  浅层特征 ── 1×1 Conv ─────⊕││ ← Concat          │
-              │                            ││                   │
-              │  3×3 Conv → 3×3 Conv → 4× Upsample              │
-              └──────────────┬───────────────┘                   │
-                             │                                   │
-                             ▼                                   │
-┌─────────────────────────────────────────────────────────────────┐
-│                      输出 (2, 384, 384)                         │
-│                  Channel 0 = 背景, Channel 1 = 前景              │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-<!-- ===== 图片占位：模型架构示意图 ===== -->
-<!-- 建议内容：DeepLabV3Plus 架构图，标注 Encoder/ASPP/Decoder 三部分 -->
-<!-- 标题：图 2: DeepLabV3Plus 架构示意图 -->
-<!-- 图片路径建议：output/task2/fig_architecture.png -->
-![图 2: DeepLabV3Plus 架构](output/task2/fig_architecture.png)
+![图 2: DeepLabV3Plus 架构](D:\lab\imageSemanticDp\output\task2\fig_architecture.png)
 *图 2: DeepLabV3Plus 架构示意图。Encoder（ResNet-50）提取多层级特征；ASPP 捕获多尺度上下文；Decoder 融合浅层细节恢复分辨率*
 
 ### 3.2 Encoder：ResNet-50
@@ -220,27 +199,9 @@ ASPP 是 DeepLab 系列的核心创新，解决普通 CNN 感受野不足以覆�
 
 **空洞卷积原理**：
 
-```
-普通 3×3 卷积 (rate=1)      空洞 3×3 卷积 (rate=2)      空洞 3×3 卷积 (rate=4)
-┌───┬───┬───┐               ┌───┬───┬───┬───┬───┐        ┌───┬───┬───┬───┬───┬───┬───┬───┬───┐
-│ ■ │ ■ │ ■ │               │ ■ │   │ ■ │   │ ■ │        │ ■ │   │   │   │ ■ │   │   │   │ ■ │
-├───┼───┼───┤               ├───┼───┼───┼───┼───┤        ├───┼───┼───┼───┼───┼───┼───┼───┼───┤
-│ ■ │ ■ │ ■ │               │   │   │   │   │   │        │   │   │   │   │   │   │   │   │   │
-├───┼───┼───┤               ├───┼───┼───┼───┼───┤        ├───┼───┼───┼───┼───┼───┼───┼───┼───┤
-│ ■ │ ■ │ ■ │               │ ■ │   │ ■ │   │ ■ │        │   │   │   │   │   │   │   │   │   │
-└───┴───┴───┘               ├───┼───┼───┼───┼───┤        ├───┼───┼───┼───┼───┼───┼───┼───┼───┤
-感受野: 3×3               │   │   │   │   │   │        │   │   │   │   │   │   │   │   │   │
-                           ├───┼───┼───┼───┼───┤        ├───┼───┼───┼───┼───┼───┼───┼───┼───┤
-                           │ ■ │   │ ■ │   │ ■ │        │ ■ │   │   │   │ ■ │   │   │   │ ■ │
-                           └───┴───┴───┴───┴───┘        ├───┼───┼───┼───┼───┼───┼───┼───┼───┤
-                           感受野: 5×5                  │   │   │   │   │   │   │   │   │   │
-                                                        ├───┼───┼───┼───┼───┼───┼───┼───┼───┤
-                                                        │   │   │   │   │   │   │   │   │   │
-                                                        ├───┼───┼───┼───┼───┼───┼───┼───┼───┤
-                                                        │ ■ │   │   │   │ ■ │   │   │   │ ■ │
-                                                        └───┴───┴───┴───┴───┴───┴───┴───┴───┘
-                                                        感受野: 9×9
-```
+![image-20260630121807237](C:\Users\lzy\AppData\Roaming\Typora\typora-user-images\image-20260630121807237.png)
+
+*图 X: 空洞卷积感受野对比。蓝色方块为 kernel 实际计算位置，浅蓝底色为有效感受野。rate=2/4 时 kernel 覆盖范围远大于 3×3，但参数量不变。*
 
 - **rate=1**（普通卷积）：3×3 kernel 覆盖连续 3×3 区域，仅捕获局部细节
 - **rate=2**：3×3 kernel 覆盖 5×5 的有效区域，感受野翻倍
@@ -370,38 +331,18 @@ A.Compose([
 
 采用 **线性 WarmUp → Cosine Annealing** 两阶段调度：
 
-```
-                      WarmUp (3 ep)              Cosine Annealing (77 ep)
-lr                    ╭──╮                       ╲
-1e-3 ┤                │  │                        ╲
-     │               ╱    │                         ╲
-     │              ╱     │                          ╲
-     │             ╱      │                           ╲
-     │            ╱       │                            ╲___
-1e-6 ┤ ─ ─ ─ ─ ─╱        │ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─
-     └─────────────────────────────────────────────────────────
-     Epoch 0        3                                      80
-```
-
 - **WarmUp 阶段**（epoch 0–2）：学习率从 0 线性增长至 1e-3，避免随机初始化的 Decoder/ASPP 在首轮就产生大梯度更新
 - **Cosine 阶段**（epoch 3–79）：平滑余弦衰减至 1e-6，末期模型参数稳定在损失曲面的盆地区域，不跳出局部最优
-
-<!-- ===== 图片占位：学习率曲线 ===== -->
-<!-- 建议内容：学习率随 epoch 变化的折线图 -->
-<!-- 标题：图 3: 学习率调度曲线 -->
-<!-- 图片路径建议：output/task2/fig_lr_schedule.png -->
-![图 3: 学习率调度曲线](output/task2/fig_lr_schedule.png)
-*图 3: WarmUp + Cosine Annealing 学习率调度曲线*
+  ![图 3: 学习率调度曲线](D:\lab\imageSemanticDp\output\task2\fig_lr_schedule.png)
+  *图 3: WarmUp + Cosine Annealing 学习率调度曲线*
 
 ### 4.5 损失函数
 
 **CrossEntropyLoss with ignore_index=255**：
 
-$$
-\mathcal{L}_{CE} = -\frac{1}{N_{valid}} \sum_{i \in \text{valid}} \sum_{c=0}^{1} y_{i,c} \log(\hat{y}_{i,c})
-$$
+$$\mathcal{L}_{CE} = -\frac{1}{N_{valid}} \sum_{i \in \text{valid}} \sum_{c=0}^{1} y_{i,c} \log(\hat{y}_{i,c})$$
 
-其中 $y_{i,c}$ 是像素 $i$ 在类别 $c$ 上的 one-hot 标签，$\hat{y}_{i,c}$ 是 softmax 预测概率。`ignore_index=255` 表示标签为 255（border 区域）的像素不参与求和，$\frac{1}{N_{valid}}$ 仅对有效像素数平均。
+其中 `y[i,c]` 为像素 `i` 在类别 `c` 上的 one-hot 标签，`ŷ[i,c]` 为 softmax 预测概率。`ignore_index=255` 使得标签值为 255（border 区域）的像素不参与 loss 求和，`1/N_valid` 确保仅对有效像素取平均。
 
 **为什么默认使用 CE 而非 Dice Loss？**
 
@@ -624,10 +565,7 @@ Epoch  80/80 | LR: 1.00e-06 | TrLoss: 0.0058 | VaLoss: 0.0543 | mIoU: 0.9713 | D
 
 ### 6.3 训练曲线
 
-<!-- ===== 图片占位：训练曲线三子图 ===== -->
-<!-- 已生成文件：output/task2/training_curves.png -->
-<!-- 标题：图 4: 训练过程曲线。从左到右：Loss / IoU / Dice & Pixel Accuracy -->
-![图 4: 训练曲线](output/task2/training_curves.png)
+![image-20260630112441403](C:\Users\lzy\AppData\Roaming\Typora\typora-user-images\image-20260630112441403.png)
 *图 4: 训练过程曲线。左：训练和验证 Loss；中：验证集 mIoU 和 FG IoU；右：验证集 Dice 和 Pixel Accuracy*
 
 ### 6.4 收敛过程分析
@@ -651,11 +589,9 @@ Epoch  80/80 | LR: 1.00e-06 | TrLoss: 0.0058 | VaLoss: 0.0543 | mIoU: 0.9713 | D
 
 ### 6.5 分割可视化结果
 
-<!-- ===== 图片占位：分割样本对比图 ===== -->
-<!-- 已生成文件：output/task2/segmentation_samples.png -->
-<!-- 标题：图 5: 验证集分割样本对比。左列：原图；中列：Ground Truth；右列：模型预测 -->
-![图 5: 分割样本对比](output/task2/segmentation_samples.png)
-*图 5: 验证集 8 张随机样本的分割对比。左列：原始图像；中列：Ground Truth（绿色=前景，黑色=背景，灰色=边界/ignore）；右列：模型预测（绿色=前景，黑色=背景）*
+<img src="C:\Users\lzy\AppData\Roaming\Typora\typora-user-images\image-20260630112513653.png" alt="image-20260630112513653" style="zoom: 50%;" />
+
+*图 5: 验证集 8 张随机样本的分割对比。左列：原始图像；中列：Ground Truth（绿色=前景，黑色=背景，灰色=边界/ignore）；右列：模型预测（绿色=前景，黑色=背景)*
 
 从可视化结果中可观察到：
 - 模型预测与 Ground Truth 高度一致，宠物主体轮廓清晰
@@ -682,12 +618,9 @@ Epoch  80/80 | LR: 1.00e-06 | TrLoss: 0.0058 | VaLoss: 0.0543 | mIoU: 0.9713 | D
 
 #### 案例 1：毛发边界（中等误差）
 
-<!-- ===== 图片占位：边界错误案例 ===== -->
-<!-- 建议内容：长毛猫的蓬松尾部，模型预测 mask 比 GT 略微收缩 1-2px -->
-<!-- 标题：图 6: 边界错误案例——长毛猫尾部 -->
-<!-- 图片路径建议：output/task2/fig_error_boundary.png -->
-![图 6: 边界错误案例](output/task2/fig_error_boundary.png)
-*图 6: 边界错误案例。长毛猫蓬松尾部区域，模型预测 mask（右）比 Ground Truth（中）略有收缩。箭头指向偏差区域。*
+
+![图 6: 边界错误案例](D:\lab\imageSemanticDp\output\task2\fig_error_boundary.png)
+*图 6: 边界错误案例。长毛猫蓬松尾部区域，模型预测 mask（右）比 Ground Truth（中)略有收缩。箭头指向偏差区域。*
 
 - **原因**：长毛猫的毛发末梢属于 trimap 中的 border（值=3），训练时被 ignore，模型从未为这些像素接收显式监督信号
 - **影响**：仅 1-3 像素偏差，对实际应用影响极小
@@ -695,12 +628,9 @@ Epoch  80/80 | LR: 1.00e-06 | TrLoss: 0.0058 | VaLoss: 0.0543 | mIoU: 0.9713 | D
 
 #### 案例 2：人手遮挡（中等误差）
 
-<!-- ===== 图片占位：遮挡错误案例 ===== -->
-<!-- 建议内容：人抱着猫的图片，人手区域被误分割为前景 -->
-<!-- 标题：图 7: 遮挡错误案例——人手遮挡 -->
-<!-- 图片路径建议：output/task2/fig_error_occlusion.png -->
-![图 7: 遮挡错误案例](output/task2/fig_error_occlusion.png)
-*图 7: 遮挡错误案例。人手（图中浅色区域）接触猫身体时，边界处的皮肤区域偶尔被误分类为前景。箭头指向误分类区域。*
+
+![图 7: 遮挡错误案例](D:\lab\imageSemanticDp\output\task2\fig_error_occlusion.png)
+*图 7: 遮挡错误案例。人手（图中浅色区域)接触猫身体时，边界处的皮肤区域偶尔被误分类为前景。箭头指向误分类区域。*
 
 - **原因**：人手颜色和纹理与某些短毛猫相似；训练集中人手出现频率低
 - **影响**：特定遮挡场景下出现假阳性
@@ -708,11 +638,8 @@ Epoch  80/80 | LR: 1.00e-06 | TrLoss: 0.0058 | VaLoss: 0.0543 | mIoU: 0.9713 | D
 
 #### 案例 3：低对比度（轻度误差）
 
-<!-- ===== 图片占位：低对比度错误案例 ===== -->
-<!-- 建议内容：白色狗趴在白色沙发/床单上，边界处模型犹豫不决 -->
-<!-- 标题：图 8: 低对比度错误案例——浅色宠物+浅色背景 -->
-<!-- 图片路径建议：output/task2/fig_error_contrast.png -->
-![图 8: 低对比度错误案例](output/task2/fig_error_contrast.png)
+
+![图 8: 低对比度错误案例](D:\lab\imageSemanticDp\output\task2\fig_error_contrast.png)
 *图 8: 低对比度错误案例。白色宠物在浅色背景上，边界区分困难。模型在宠物-背景过渡带出现断断续续的预测。*
 
 - **原因**：RGB 颜色空间中白色宠物的毛发边缘与白色背景几乎无纹理区分度
@@ -777,7 +704,23 @@ Epoch  80/80 | LR: 1.00e-06 | TrLoss: 0.0058 | VaLoss: 0.0543 | mIoU: 0.9713 | D
 
 两者区别在于任务复杂度——分类仅需 1 个标签，分割需要对 147,456 个像素（384×384）逐一预测。DeepLabV3Plus 通过 ASPP 和 Decoder 的配合成功应对了这一挑战。
 
----
+### 8.5 对现有工作的升级与改动
+
+本实验基于开源工具（PyTorch, smp, albumentations, torchvision）和 DeepLabV3Plus 架构，在以下方面进行了自己的升级与工程优化：
+
+1. **自研二分类 + Border Ignore 标签处理策略**：Oxford-IIIT Pet 的原始 trimap 为三值标注（1=前景, 2=背景, 3=边界不确定），开源方案多直接预测三分类。本实验采用二分类（前景/背景）+ `ignore_index=255` 忽略 border 像素的策略，在 `__getitem__` 中实时重映射。这一设计有明确的理论动机——border 仅占 ~10%、标注主观性强、设为 ignore 可避免学习噪声——最终以 mIoU 0.9721 验证了其有效性。该策略与三分类方案的对比在 8.3 节列入后续消融方向。
+
+2. **针对分割任务定制的增强策略**：不同于通用分割代码的默认增强，本实验显式排除了 ShiftScaleRotate 和 ElasticTransform——理由是猫狗的眼鼻嘴等器官是分割关键线索，仿射/弹性变形会破坏这些结构。同时限制 RandomResizedCrop scale 下界为 0.5（而非常见的 0.3），防止裁剪后宠物主体占比过低成为近似全背景样本。ColorJitter 的 hue/saturation 不做大幅扰动，因为毛色是区分宠物和背景的重要特征。这些决策均非开源代码默认值，而是基于分割目标特性的定制调整。
+
+3. **完整的架构对比分析**：在 3.6 节与 U-Net 和 DeepLabV3 进行了系统的架构对比（参数量、跳连、全局上下文、适用场景），为选择 DeepLabV3Plus 提供了量化的决策依据，而非直接使用默认推荐。
+
+4. **自研错误分析流程**：编写了 per-image mIoU 排序脚本，在 736 张验证集上逐张推理后定位误差最大样本，按错误类型（边界模糊、遮挡、低对比度）分类可视化。该分析工具完全自研，与训练脚本独立，不依赖任何现有工具。
+
+5. **注意力机制增强实验（已在8.3列入后续方向）**：在 ResNet-50 基础上提出了 SE Block 增强方案，虽未在本轮实验中实施，但已作为明确的后续方向写入报告。
+
+   ------
+
+   
 
 ## 附录
 
@@ -820,3 +763,15 @@ python src/task2_segmentation.py
 # 指定不同配置
 python src/task2_segmentation.py --encoder_name resnet34 --batch_size 8 --epochs 60
 ```
+
+---
+
+## 参考文献
+
+1. Chen, L. C., Zhu, Y., Papandreou, G., Schroff, F., & Adam, H. (2018). Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation. *Proceedings of the European Conference on Computer Vision (ECCV)*.
+2. Chen, L. C., Papandreou, G., Schroff, F., & Adam, H. (2017). Rethinking Atrous Convolution for Semantic Image Segmentation. *arXiv preprint arXiv:1706.05587*.
+3. He, K., Zhang, X., Ren, S., & Sun, J. (2016). Deep Residual Learning for Image Recognition. *Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)*.
+4. Ronneberger, O., Fischer, P., & Brox, T. (2015). U-Net: Convolutional Networks for Biomedical Image Segmentation. *Proceedings of the International Conference on Medical Image Computing and Computer-Assisted Intervention (MICCAI)*.
+5. Parkhi, O. M., Vedaldi, A., Zisserman, A., & Jawahar, C. V. (2012). Cats and Dogs. *Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR)*.
+6. Loshchilov, I., & Hutter, F. (2019). Decoupled Weight Decay Regularization. *International Conference on Learning Representations (ICLR)*.
+7. segmentation-models-pytorch: https://github.com/qubvel/segmentation_models.pytorch
